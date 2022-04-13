@@ -6,11 +6,12 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using KModkit;
 
-public class Template : MonoBehaviour {
+public class ModuleManeuversScript : MonoBehaviour {
 
     public KMBombInfo Bomb;
     public KMAudio Audio;
     public KMBombModule Module;
+    public KMBossModule Boss;
 
     static int moduleIdCounter = 1;
     int moduleId;

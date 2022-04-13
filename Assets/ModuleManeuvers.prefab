@@ -70,9 +70,10 @@ GameObject:
   - component: {fileID: 114915473299363512}
   - component: {fileID: 114454383462897410}
   - component: {fileID: 114853960920223876}
+  - component: {fileID: 114023127112714380}
   - component: {fileID: 114139553842080666}
   m_Layer: 0
-  m_Name: Template Mod
+  m_Name: ModuleManeuvers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -213,6 +214,17 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1790091999367520}
   m_Mesh: {fileID: 4300000, guid: 1c46642b7f907d844bcdfcca8625afdd, type: 3}
+--- !u!114 &114023127112714380
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1676409040304040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96a2fc4ae3e690a498a0d85a2b5e0b99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114139553842080666
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -283,8 +295,8 @@ MonoBehaviour:
   m_Script: {fileID: -119419473, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ModuleType: moduleName
-  ModuleDisplayName: Module Name
+  ModuleType: moduleManeuvers
+  ModuleDisplayName: Module Maneuvers
   RequiresTimerVisibility: 0
 --- !u!114 &114907837735438752
 MonoBehaviour:
