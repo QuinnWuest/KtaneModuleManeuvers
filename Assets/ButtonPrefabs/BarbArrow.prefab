@@ -56,8 +56,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4643683139799966}
+  - component: {fileID: 114420992079665496}
   m_Layer: 0
-  m_Name: BarbArrow 1
+  m_Name: BarbArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -223,6 +224,19 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114420992079665496
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1925603491585912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0573c3f8c3851774e93b3449c5ca7487, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  btn: {fileID: 114083980087830492}
+  flashingRenderer: {fileID: 23033884895843664}
 --- !u!114 &114810716118765690
 MonoBehaviour:
   m_ObjectHideFlags: 1

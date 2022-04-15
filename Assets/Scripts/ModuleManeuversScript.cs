@@ -13,6 +13,13 @@ public class ModuleManeuversScript : MonoBehaviour {
     public KMBombModule Module;
     public KMBossModule Boss;
 
+    public Button[] buttonPrefabs;
+    public KMSelectable centerButton;
+    public TextMesh leftCol, rightCol, leftRow, rightRow;
+    public Transform[] positionParents;
+
+    private Button[] usedButtons;
+
     static int moduleIdCounter = 1;
     int moduleId;
     private bool moduleSolved;

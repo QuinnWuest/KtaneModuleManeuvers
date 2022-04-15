@@ -19,8 +19,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4897035801679780}
+  - component: {fileID: 114662785916223436}
   m_Layer: 0
-  m_Name: BarbStemArrow 1
+  m_Name: FlatStemArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -223,6 +224,19 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114662785916223436
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1014794618606264}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b42d7aa4019d8e54ab341fc2b2c5afe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  btn: {fileID: 114421692319538038}
+  flashingRenderer: {fileID: 23523157123801612}
 --- !u!114 &114778338588191294
 MonoBehaviour:
   m_ObjectHideFlags: 1
