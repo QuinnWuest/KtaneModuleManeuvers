@@ -1,28 +1,14 @@
 fileFormatVersion: 2
-guid: d2a1610b71059fd4ca8182abe14602cf
+guid: 3f84ee640a073d64fab01408308f0989
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
-    100002: group_0_15277357
-    100004: group_0_3888547
-    100006: group_0_11909273
     400000: //RootNode
-    400002: group_0_15277357
-    400004: group_0_3888547
-    400006: group_0_11909273
-    2100000: group_0_15277357Mat
-    2100002: group_0_3888547Mat
-    2100004: group_0_11909273Mat
-    2300000: group_0_15277357
-    2300002: group_0_3888547
-    2300004: group_0_11909273
-    3300000: group_0_15277357
-    3300002: group_0_3888547
-    3300004: group_0_11909273
-    4300000: group_0_15277357
-    4300002: group_0_3888547
-    4300004: group_0_11909273
+    2100000: No Name
+    2300000: //RootNode
+    3300000: //RootNode
+    4300000: Cylinder
   externalObjects: {}
   materials:
     importMaterials: 1
