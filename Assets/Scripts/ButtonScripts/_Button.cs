@@ -9,6 +9,7 @@ public abstract class Button : MonoBehaviour {
 	public KMSelectable btn;
 	public MeshRenderer flashingRenderer;
 	private KMSelectable parentMod;
+	public Dir direction { get; set; }
 
 	protected const RegexOptions regexFlags = RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
 	public abstract Predicate<string> rule { get; }
