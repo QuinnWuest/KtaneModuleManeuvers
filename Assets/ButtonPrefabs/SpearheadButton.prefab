@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 33233651398332210}
   - component: {fileID: 23480258318078998}
   - component: {fileID: 114568055907776912}
+  - component: {fileID: 114437403873535374}
   m_Layer: 0
   m_Name: HL
   m_TagString: Untagged
@@ -41,6 +42,7 @@ GameObject:
   - component: {fileID: 23291431385679976}
   - component: {fileID: 114549377610255638}
   - component: {fileID: 64459943194945964}
+  - component: {fileID: 114307424409110782}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -85,8 +87,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1506577659673282}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: -0, y: 0, z: -0.0125}
-  m_LocalScale: {x: 0.0035, y: 0.0035, z: 0.002}
+  m_LocalPosition: {x: -0, y: -0, z: -0.005}
+  m_LocalScale: {x: 0.0035, y: 0.003, z: 0.002}
   m_Children:
   - {fileID: 4914150026037416}
   m_Father: {fileID: 4179102621882956}
@@ -201,6 +203,32 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: 6e7b8b0a14774b84182a317ccec66619, type: 3}
+--- !u!114 &114307424409110782
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1506577659673282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Mobile/DiffuseTint
+--- !u!114 &114437403873535374
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1302613857026728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Outline
 --- !u!114 &114549377610255638
 MonoBehaviour:
   m_ObjectHideFlags: 1

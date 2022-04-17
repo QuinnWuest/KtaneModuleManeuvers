@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 23086744616364342}
   - component: {fileID: 114008156149748236}
   - component: {fileID: 64408351376737416}
+  - component: {fileID: 114492117467703288}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -41,6 +42,7 @@ GameObject:
   - component: {fileID: 33335999207655716}
   - component: {fileID: 23106571157157972}
   - component: {fileID: 114575293678382968}
+  - component: {fileID: 114029359733233454}
   m_Layer: 0
   m_Name: HL
   m_TagString: Untagged
@@ -224,6 +226,32 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114029359733233454
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1572918708618684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Outline
+--- !u!114 &114492117467703288
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1352277892779330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Mobile/DiffuseTint
 --- !u!114 &114575293678382968
 MonoBehaviour:
   m_ObjectHideFlags: 1

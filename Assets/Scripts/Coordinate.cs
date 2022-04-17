@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Coordinate : IEquatable<Coordinate> {
+public struct Coordinate : IEquatable<Coordinate> {
 
 	public int x { get; private set; }
 	public int y { get; private set; }
@@ -30,13 +30,17 @@ public class Coordinate : IEquatable<Coordinate> {
     {
         return directions.Aggregate(this, (c, dir) => c.ApplyMovement(dir));
     }
+    public Coordinate ApplyMovement(ModuleInfo info)
+    {
+        return ApplyMovement(info.directions);
+    }
 
     public override string ToString()
     {
         return string.Format("({0}, {1})", x, y);
     }
     public override bool Equals(object obj)
-    { return obj is Coordinate && Equals(obj as Coordinate); }
+    { return obj is Coordinate && Equals((Coordinate)obj); }
     public bool Equals(Coordinate other) 
     { return x == other.x && y == other.y; }
 }

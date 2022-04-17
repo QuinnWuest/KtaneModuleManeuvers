@@ -16,13 +16,23 @@ public class ModuleInfo {
     public ModuleInfo(string name, Button[] btns)
     {
         modName = name;
+        directions = new List<Dir>();
         foreach (Button btn in btns)
             if (btn.rule(name))
                 directions.Add(btn.direction);
     }
     public override string ToString()
     {
-        return modName + ": " + directions.Select(d => d.ToString()[0]).Join("");
+        return modName + ": " + (directions.Count == 0 ? "ø" : directions.Select(d => d.ToString()[0]).Join(""));
+    }
+
+    public IEnumerable<Dir> Invert()
+    {
+        return directions.Select(d => (Dir)((int)d + 2));
+    }
+    public bool Includes(Dir d)
+    {
+        return directions.Contains(d) && !directions.Contains((Dir)((int)d + 2));
     }
 
 }

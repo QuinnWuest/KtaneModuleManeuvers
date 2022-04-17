@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4092299171541224}
   - component: {fileID: 33552609169299762}
   - component: {fileID: 23550302147201492}
+  - component: {fileID: 114945255593043238}
   m_Layer: 0
   m_Name: Protrusion
   m_TagString: Untagged
@@ -55,6 +56,7 @@ GameObject:
   - component: {fileID: 33635311794921742}
   - component: {fileID: 23822869778023080}
   - component: {fileID: 114818484278865770}
+  - component: {fileID: 114071801844588932}
   m_Layer: 0
   m_Name: HL
   m_TagString: Untagged
@@ -89,6 +91,7 @@ GameObject:
   - component: {fileID: 33735128103374888}
   - component: {fileID: 23603402470936270}
   - component: {fileID: 64478306644599152}
+  - component: {fileID: 114524061421561658}
   m_Layer: 0
   m_Name: Backing
   m_TagString: Untagged
@@ -302,6 +305,19 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: e7b64d358c89e0b42a3fa23cb344a486, type: 3}
+--- !u!114 &114071801844588932
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1416651259907944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Outline
 --- !u!114 &114426061929416620
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -325,6 +341,19 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114524061421561658
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1638833339996658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Mobile/DiffuseTint
 --- !u!114 &114558028013222598
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -351,3 +380,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
+--- !u!114 &114945255593043238
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1384028002659674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - KT/Mobile/DiffuseTint

@@ -420,4 +420,21 @@ public static class Ut
             dict[item]++;
         else dict.Add(item, 1);
     }
+    /// <summary>
+    /// Gets the element of <paramref name="list"/> at index <paramref name="ix"/> and removes it from the list.
+    /// </summary>
+    /// <typeparam name="T">The generic type of the list.</typeparam>
+    /// <param name="list">The list to be accessed.</param>
+    /// <param name="ix">The position of the element to be removed from the list.</param>
+    /// <returns>The element at position <paramref name="ix"/> of <paramref name="list"/>.</returns>
+    public static T PopAt<T>(this IList<T> list, int ix)
+    {
+        if (list == null)
+            throw new ArgumentNullException("list");
+        if (ix < 0 || ix >= list.Count)
+            throw new ArgumentOutOfRangeException("ix");
+        T output = list[ix];
+        list.RemoveAt(ix);
+        return output;
+    }
 }
