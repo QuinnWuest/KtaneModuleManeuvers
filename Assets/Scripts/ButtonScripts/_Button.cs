@@ -12,6 +12,7 @@ public abstract class Button : MonoBehaviour {
 	private KMSelectable _parentMod;
 	private MeshCollider _collider;
 	private Mesh _mesh;
+	private Color _initCol;
 	public Dir direction { get; set; }
 
 	protected const RegexOptions regexFlags = RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
@@ -23,6 +24,7 @@ public abstract class Button : MonoBehaviour {
 		btn.Parent = _parentMod;
 		_collider = (MeshCollider)btn.SelectableColliders[0];
 		_mesh = _collider.sharedMesh;
+		_initCol = flashingRenderer.material.color;
 	}
 
 	public void SetChildStatus(bool enable)
@@ -40,13 +42,9 @@ public abstract class Button : MonoBehaviour {
         return base.ToString();
     }
 
-    public IEnumerator FlashButton()
+    public void SetRendererFlash(bool state)
     {
-		Color initC = flashingRenderer.material.color;
-		flashingRenderer.material.color = Color.white;
-		yield return new WaitForSeconds(0.75f);
-		flashingRenderer.material.color = initC;
-		yield return new WaitForSeconds(0.75f);
+		flashingRenderer.material.color = state ? Color.white : _initCol;
     }
 	public IEnumerator RotateToCenter()
     {

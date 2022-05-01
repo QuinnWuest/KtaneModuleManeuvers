@@ -6,13 +6,13 @@ using System.Linq;
 
 public struct Coordinate : IEquatable<Coordinate> {
 
-	public int x { get; private set; }
-	public int y { get; private set; }
+    public int x { get; private set; }
+    public int y { get; private set; }
 
-	public Coordinate(int x, int y)
+    public Coordinate(int x, int y)
     {
-		this.x = x;
-		this.y = y;
+        this.x = x;
+        this.y = y;
     }
 
     public Coordinate ApplyMovement(Dir direction)
@@ -41,6 +41,9 @@ public struct Coordinate : IEquatable<Coordinate> {
     }
     public override bool Equals(object obj)
     { return obj is Coordinate && Equals((Coordinate)obj); }
-    public bool Equals(Coordinate other) 
+    public bool Equals(Coordinate other)
     { return x == other.x && y == other.y; }
+
+    public static bool operator ==(Coordinate a, Coordinate b) { return a.Equals(b); }
+    public static bool operator !=(Coordinate a, Coordinate b) { return !a.Equals(b); }
 }

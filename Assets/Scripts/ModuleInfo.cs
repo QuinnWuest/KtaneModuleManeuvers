@@ -35,4 +35,9 @@ public class ModuleInfo {
         return directions.Contains(d) && !directions.Contains((Dir)((int)d + 2));
     }
 
+    public override bool Equals(object obj)
+    {
+        return obj is ModuleInfo && (obj as ModuleInfo).modName == modName;
+    }
+
 }

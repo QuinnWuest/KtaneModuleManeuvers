@@ -24,17 +24,25 @@ public class ModuleManeuversScript : MonoBehaviour {
 
     private Button[] usedButtons;
     private List<ModuleInfo> usableInfos;
-    private List<ModuleInfo> solutionInfos;
-    private int solvedModsCount = 0;
+    private List<ModuleInfo> primaryMods;
+    private Dictionary<string, ModuleInfo> modLookup;
+    private List<string> solvedModules = new List<string>();
+
     private Coordinate endPos, currentPos;
 
     static int moduleIdCounter = 1;
     int moduleId;
-    private bool moduleSolved;
+    private bool setUp;
+    private State currentState = State.Active;
+    private int currentRecallStage = 1;
+    private int arrowPressesCount = 0;
 
     private bool centerHeld;
     private Coroutine holdCoroutine;
+    private float holdTime;
 
+    private bool? tpLongHold = null;
+    private bool autosolving;
     void Awake () {
         moduleId = moduleIdCounter++;
         centerButton.OnInteract += () => { Hold(); return false; };
@@ -56,13 +64,63 @@ public class ModuleManeuversScript : MonoBehaviour {
         if (holdCoroutine != null)
             StopCoroutine(holdCoroutine);
         holdCoroutine = StartCoroutine(MoveButton(0.021f, 0.03f, 0.1f));
+        if (currentState == State.Active || (currentState == State.Input && holdTime < 1 && tpLongHold != true))
+            SubmitAnswer();
+        else if (currentState == State.Input)
+            EnterStageRecall();
+        else if (currentState == State.Recall)
+            StartCoroutine(RecallStage());
+        holdTime = 0;
     }
-
-    void Start ()
+  
+  IEnumerator Start ()
     {
+        yield return null;
         ignoredModules = ignoredModules ?? Boss.GetIgnoredModules("Module Maneuvers", new string[] { "14", "42", "501", "A>N<D", "Bamboozling Time Keeper", "Black Arrows", "Brainf---", "Busy Beaver", "Don't Touch Anything", "Floor Lights", "Forget Any Color", "Forget Enigma", "Forget Everything", "Forget Infinity", "Forget It Not", "Forget Maze Not", "Forget Me Later", "Forget Me Not", "Forget Perspective", "Forget The Colors", "Forget Them All", "Forget This", "Forget Us Not", "Iconic", "Keypad Directionality", "Kugelblitz", "Module Maneuvers", "Multitask", "OmegaDestroyer", "OmegaForest", "Organization", "Password Destroyer", "Purgatory", "RPS Judging", "Security Council", "Shoddy Chess", "Simon Forgets", "Simon's Stages", "Souvenir", "Tallordered Keys", "The Time Keeper", "Timing is Everything", "The Troll", "Turn The Key", "The Twin", "Übermodule", "Ultimate Custom Night", "The Very Annoying Button", "Whiteout" });
+        
         GetMovements();
-        GetPositions();
+        yield return GetPositions();
+
+        modLookup = new Dictionary<string, ModuleInfo>();
+        HashSet<string> names = new HashSet<string>();
+        foreach (ModuleInfo info in usableInfos)
+            if (names.Add(info.modName))
+                modLookup.Add(info.modName, info);
+        setUp = true;
+    }
+    void Update()
+    {
+        if (!setUp)
+            return;
+        if (centerHeld)
+            holdTime += Time.deltaTime;
+
+        float multiplier = Time.deltaTime;
+        multiplier *= centerHeld ? 90 : 20;
+        multiplier *= solvedModules.Count % 2 == 0 ? +1 : -1;
+        centerButton.transform.localEulerAngles += multiplier * Vector3.up;
+
+        
+        var currentSolves = Bomb.GetSolvedModuleNames().Except(ignoredModules);
+        if (currentSolves.Count() != solvedModules.Count)
+        {
+        //    Log("fhowfow " + currentSolves.Count() + " " + solvedModules.Count);
+            var newSolves = currentSolves.Except(solvedModules);
+        //    Log("{0} new solves", newSolves.Count());
+            foreach (string solve in newSolves)
+                MoveFromMod(modLookup[solve]);
+        //    Log("Should be {0} solved opposed to {1}.", currentSolves.Count(), solvedModules.Count);
+            solvedModules = currentSolves.ToList();
+        }
+        //else Log("kjdfslfajksdfljksdkfjl " + currentSolves.Count() + " " + solvedModules.Count);
+
+
+        if (solvedModules.Count == usableInfos.Count)
+        {
+            currentState = State.Input;
+            StartCoroutine(EnterInput());
+        }
+
     }
 
     void GetButtons()
@@ -75,7 +133,7 @@ public class ModuleManeuversScript : MonoBehaviour {
             usedButtons[i].direction = (Dir)i;
             usedButtons[i].transform.localEulerAngles = new Vector3(0, Rnd.Range(-rotationBound, +rotationBound), 0);
             usedButtons[i].SetChildStatus(false);
-            Log("{0} button: {1}", (Dir)i, usedButtons[i]);
+            Log("{0} button: {1}", (Dir)i, usedButtons[i].name);
         }
         GetComponent<KMSelectable>().Children = new[] { centerButton }.Concat(usedButtons.Select(x => x.btn)).ToArray();
         GetComponent<KMSelectable>().UpdateChildrenProperly();
@@ -84,7 +142,7 @@ public class ModuleManeuversScript : MonoBehaviour {
     {
         string[] modNames = Bomb.GetSolvableModuleNames().Where(x => !ignoredModules.Contains(x)).ToArray();
 #if UNITY_EDITOR
-        modNames = new[] { "3D Maze", "Adjacent Letters", "Adventure Game", "Alphabet", "Anagrams", "Astrology", "Battleship", "Big Button Translated", "Binary LEDs", "Bitmaps", "Bitwise Operations", "Blind Alley", "Boolean Venn Diagram", "Broken Buttons", "The Bulb", "The Button", "Caesar Cipher", "Cheap Checkout", "Chess", "Chord Qualities", "The Clock", "Colored Squares", "Color Math", "Colour Flash", "Combination Lock", "Complicated Buttons", "Complicated Wires", "Connection Check", "Coordinates", "Crazy Talk", "Creation", "Cryptography", "Double-Oh", "Emoji Math", "English Test", "Fast Math", "FizzBuzz", "Follow the Leader", "Foreign Exchange Rates", "Forget Me Not", "Friendship", "The Gamepad", "Hexamaze", "Ice Cream", "Keypad", "Laundry", "LED Encryption", "Letter Keys", "Light Cycle", "Listening", "Logic", "Maze", "Memory", "Microcontroller", "Minesweeper", "Modules Against Humanity", "Monsplode, Fight!", "Morse Code", "Morse Code Translated", "Morsematics", "Mouse In The Maze", "Murder", "Mystic Square", "Neutralization", "Number Pad", "Only Connect", "Orientation Cube", "Password", "Passwords Translated", "Perspective Pegs", "Piano Keys", "Plumbing", "Point of Order", "Probing", "Resistors", "Rhythms", "Rock-Paper-Scissors-L.-Sp.", "Round Keypad", "Rubik's Cube", "Safety Safe", "The Screw", "Sea Shells", "Semaphore", "Shape Shift", "Silly Slots", "Simon Says", "Simon Screams", "Simon States", "Skewed Slots", "Souvenir", "Square Button", "Switches", "Symbolic Password", "Text Field", "Third Base", "Tic Tac Toe", "Turn The Key", "Turn The Keys", "Two Bits", "Web Design", "Who's on First", "Who's on First Translated", "Wire Placement", "Wires", "Wire Sequence", "Word Scramble", "Word Search", "Yahtzee", "Zoo", };
+        modNames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(x => x.ToString()).ToArray();
 #endif
         usableInfos = new List<ModuleInfo>(modNames.Length);
         Log("Found {0} modules on the bomb.", modNames.Length);
@@ -95,40 +153,115 @@ public class ModuleManeuversScript : MonoBehaviour {
             Log(info.ToString());
         }
     }
-    void GetPositions()
+    IEnumerator GetPositions()
     {
         ModuleInfo[] uses = usableInfos.Where(x => x.directions.Count > 0).ToArray();
         currentPos = new Coordinate(0, 0);
         if (uses.Count() > 0)
         {
+            List<ModuleInfo> path = null;
+            yield return GetPrimaryMods(uses.ToList());
             if (Bomb.GetModuleNames().Contains("Organization"))
             {
-                //Org handler
+                int pathLength = Math.Max(1, uses.Length / 3);
+                Log("Organization detected, solving after {0} modules.", pathLength);
+                var script = ReflectionHelper.FindType("OrganizationScript");
+                var instance = FindObjectOfType(script);
+                List<string> order = instance.GetValue<List<string>>("order");
+                path = order.Select(item => uses.FirstOrDefault(x => x.modName == item)).Where(x => x != null).Take(pathLength).ToList();
             }
-            else
+            else path = GetPath(uses);
+            Log("Generated path:");
+            List<Coordinate> visited = new List<Coordinate>(path.Count + 1) { new Coordinate(0, 0) };
+            foreach (ModuleInfo info in path)
             {
-                List<ModuleInfo> path = GetPath(uses);
-                Log("Generated path:");
-                List<Coordinate> visited = new List<Coordinate>(path.Count + 1) { new Coordinate(0, 0) };
-                foreach (ModuleInfo info in path)
-                {
-                    Log(info.ToString());
-                    visited.Add(visited.Last().ApplyMovement(info.directions));
-                }
-                Log("Path from origin: " + visited.Join(" > "));
-                endPos = visited.Last();
-                leftDisp.text = endPos.x.ToString();
-                rightDisp.text = endPos.y.ToString();
+                Log(info.ToString());
+                visited.Add(visited.Last().ApplyMovement(info.directions));
             }
+            Log("Path from origin: " + visited.Join(" > "));
+            endPos = visited.Last();
+            leftDisp.text = endPos.x.ToString();
+            rightDisp.text = endPos.y.ToString();
+            Log("Goal position: {0}.", endPos);
+            
         }
+    }
 
+    IEnumerator EnterInput()
+    {
+
+        
+        Log("Entering input.");
+        for (int i = 0; i < 4; i++)
+            StartCoroutine(usedButtons[i].RotateToCenter());
+        yield return new WaitForSeconds(0.5f);
+        for (int i = 0; i < 4; i++)
+        {
+            int ix = i;
+            usedButtons[ix].SetChildStatus(true);
+            usedButtons[ix].btn.OnInteract += () => { ArrowPress((Dir)ix); return false; };
+        }
+    }
+    void ArrowPress(Dir d)
+    {
+        usedButtons[(int)d].btn.AddInteractionPunch(0.5f);
+        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, usedButtons[(int)d].transform);
+        if (currentState == State.Input)
+        {
+            arrowPressesCount++;
+            Coordinate next = currentPos.ApplyMovement(d);
+            Log("Manually moved {0} from {1} to {2}. {3}", d, currentPos, next, arrowPressesCount % 2 == 0 ? "Strike!" : "");
+            currentPos = next;
+            if (arrowPressesCount % 2 == 0 && !autosolving)
+                Module.HandleStrike();
+        }
+        else if (currentState == State.Recall)
+        {
+            int[] offsets = { +5, +1, -5, -1 };
+            currentRecallStage += offsets[(int)d];
+            currentRecallStage = currentRecallStage.Clamp(1, solvedModules.Count);
+            SetDisplays(currentRecallStage);
+        }
+    }
+
+    void MoveFromMod(ModuleInfo mod)
+    {
+        Log("Solved {0}, which corresponds to directions {1}.", mod.modName, mod.directions.Select(d => d.ToString()[0]).Join(""));
+        Coordinate newPos = currentPos.ApplyMovement(mod);
+        if (currentPos != newPos)
+        {
+            Log("Moved from {0} to {1}.", currentPos, newPos);
+            currentPos = newPos;
+        }
+    }
+
+    void SubmitAnswer()
+    {
+        if (currentPos == endPos)
+        {
+            currentState = State.Solved;
+            Log("Submitted at the goal position, module solved!");
+            leftDisp.text = "!!!";
+            rightDisp.text = "!!!";
+            leftDisp.color = new Color32(0xFD, 0x85, 0xFF, 0xFF);
+            rightDisp.color = new Color32(0xFD, 0x85, 0xFF, 0xFF);
+            for (int i = 0; i < 4; i++)
+                usedButtons[i].SetChildStatus(false);
+            Module.HandlePass();
+        }
+        else
+        {
+            Log("Submitted at {0}. Strike!", currentPos);
+            Module.HandleStrike();
+        }
     }
     List<ModuleInfo> GetPath(ModuleInfo[] used)
     {
         int pathLength = Math.Max(1, used.Length / 3);
         List<ModuleInfo> path = new List<ModuleInfo>(pathLength);
-        List<ModuleInfo> firstMods = GetPrimaryMods(used.ToList());
+        List<ModuleInfo> firstMods = primaryMods.ToList();
         List<ModuleInfo> laterMods = used.Where(x => !firstMods.Contains(x)).ToList();
+        
         Dictionary<Dir, List<ModuleInfo>> values = new Dictionary<Dir, List<ModuleInfo>>()
                     { {Dir.Up, new List<ModuleInfo>() }, {Dir.Right, new List<ModuleInfo>() }, {Dir.Down, new List<ModuleInfo>() }, {Dir.Left, new List<ModuleInfo>()} };
         foreach (ModuleInfo info in firstMods)
@@ -139,31 +272,36 @@ public class ModuleManeuversScript : MonoBehaviour {
         Dir primDir = primaryEntry.Key;
         List<ModuleInfo> primMods = primaryEntry.Value.Shuffle();
         firstMods.RemoveMany(primMods);
-        Debug.Log(primMods.Count);
-        int takenFromPrimaryCount = Enumerable.Range(1, Math.Min(primMods.Count, pathLength))
-                                    .SelectMany(val => Enumerable.Repeat(val, Math.Min(1, (int)(val / 3.5))))
-                                    .PickRandom();
+        //int takenFromPrimaryCount = Enumerable.Range(1, Math.Min(primMods.Count, pathLength))
+        //                            .SelectMany(val => Enumerable.Repeat(val, Math.Max(1, val < primMods.Count / 2 ? val : primMods.Count - val)))
+        //                            .PickRandom();
+        int takenFromPrimaryCount = Mathf.CeilToInt(primMods.Count / 2f);
         path.AddRange(primMods.Take(takenFromPrimaryCount));
-        while (path.Count < pathLength)
+        while (path.Count < pathLength && (laterMods.Count > 0 || firstMods.Count > 0))
         {
             if (firstMods.Count > 0)
                 path.Add(firstMods.PopAt(0));
             else path.Add(laterMods.PopAt(0));
         }
+        
+        path.AddRange(firstMods.Take(pathLength));
+        for (int i = 0; path.Count != pathLength && i < laterMods.Count; i++)
+            path.Add(laterMods[i]);
+
 
         Log("Selecting {0} mods for the pre-generated path.", pathLength);
-        Log("Found {0} mods with the primary chosen direction ({1}).", primMods.Count, primDir);
+        //Log("Found {0} mods with the primary chosen direction ({1}).", primMods.Count, primDir);
         return path;
     }
-    List<ModuleInfo> GetPrimaryMods(List<ModuleInfo> infos)
+    IEnumerator GetPrimaryMods(List<ModuleInfo> infos)
     {
-        if (Bomb.GetModuleNames().Contains("Turn The Keys"))
+        if (infos.Select(x => x.modName).Contains("Turn The Keys"))
             infos = FilterWithTTKS(infos);
         if (Bomb.GetModuleNames().Contains("Custom Keys"))
-            FilterWithCustomKeys(infos);
+            yield return FilterWithCustomKeys(infos);
         if (Bomb.GetModuleNames().Contains("Mystery Module"))
-            FilterWithMM(infos);
-        return infos.Shuffle();
+            yield return FilterWithMM(infos);
+        primaryMods = infos;
     }
     List<ModuleInfo> FilterWithTTKS(List<ModuleInfo> infos)
     {
@@ -171,30 +309,60 @@ public class ModuleManeuversScript : MonoBehaviour {
         string[] after = { "Maze", "Memory", "Complicated Wires", "Wire Sequence", "Cryptography", "Semaphore", "Combination Lock", "Simon Says", "Astrology", "Switches", "Plumbing" };
         return infos.Where(inf => !after.Contains(inf.modName)).ToList();
     }
-    List<ModuleInfo> FilterWithCustomKeys(List<ModuleInfo> infos)
+    IEnumerator FilterWithCustomKeys(List<ModuleInfo> infos)
     {
         Log("Custom Keys found, filtering by its ignore list.");
         var script = ReflectionHelper.FindType("RemoteTurnTheKeysScript");
         var instance = FindObjectOfType(script);
+        while (instance.GetValue<string[]>("leftKeyAfter") == null || instance.GetValue<string[]>("rightKeyAfter") == null)
+            yield return null;
         List<string> after  = instance.GetValue<string[]>("leftKeyAfter").Concat(
                               instance.GetValue<string[]>("rightKeyAfter")).ToList();
-        return infos.Where(inf => !after.Contains(inf.modName)).ToList();
+        infos = infos.Where(inf => !after.Contains(inf.modName)).ToList();
     }
-    List<ModuleInfo> FilterWithMM(List<ModuleInfo> infos)
+    IEnumerator FilterWithMM(List<ModuleInfo> infos)
     {
         Log("Mystery module found, filtering by its module list");
         var script = ReflectionHelper.FindType("MysteryModuleScript");
         var instance = FindObjectOfType(script);
+        while (instance.GetValue<List<KMBombModule>>("keyModules") == null)
+            yield return null;
         List<string> keys = instance.GetValue<List<KMBombModule>>("keyModules").Select(x => x.ModuleDisplayName).ToList();
-        return infos.Where(inf => !keys.Contains(inf.modName)).ToList();
+        infos = infos.Where(inf => !keys.Contains(inf.modName)).ToList();
     }
 
-    void Update()
+    void EnterStageRecall()
     {
-        float multiplier = Time.deltaTime;
-        multiplier *= centerHeld ? 90 : 20;
-        multiplier *= solvedModsCount % 2 == 0 ? +1 : -1;
-        centerButton.transform.localEulerAngles += multiplier * Vector3.up;
+        currentState = State.Recall;
+        SetDisplays(1);
+    }
+    IEnumerator RecallStage()
+    {
+        for (int i = 0; i < 4; i++)
+            usedButtons[i].SetChildStatus(false);
+        Log("Recalling stages {0}-{1} (this will strike).", currentRecallStage, (currentRecallStage + 2).Clamp(0, solvedModules.Count));
+        currentState = State.RecallingProcess;
+        for (int stage = currentRecallStage - 1; stage < solvedModules.Count && stage < currentRecallStage + 2; stage++)
+        {
+            SetDisplays(stage + 1);
+            for (int arrowPos = 0; arrowPos < 4; arrowPos++)
+                usedButtons[arrowPos].SetRendererFlash(modLookup[solvedModules[stage]].directions.Contains((Dir)arrowPos));
+            yield return new WaitForSeconds(0.75f);
+            for (int arrowPos = 0; arrowPos < 4; arrowPos++)
+                usedButtons[arrowPos].SetRendererFlash(false);
+            yield return new WaitForSeconds(0.75f);
+        }
+        Module.HandleStrike();
+        currentState = State.Input;
+        leftDisp.text = endPos.x.ToString();
+        rightDisp.text = endPos.y.ToString();
+        for (int i = 0; i < 4; i++)
+            usedButtons[i].SetChildStatus(true);
+    }
+    void SetDisplays(int value)
+    {
+        leftDisp.text = value < 100 ? "" : (value / 100).ToString();
+        rightDisp.text = (value % 100).ToString();
     }
 
     IEnumerator MoveButton(float locA, float locB, float duration)
@@ -213,19 +381,57 @@ public class ModuleManeuversScript : MonoBehaviour {
         Debug.LogFormat("[Module Maneuvers #{0}] {1}", moduleId, string.Format(msg, args));
     }
 
-    #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"Use <!{0} foobar> to do something.";
-    #pragma warning restore 414
-
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"Use [!{0} submit] to press the center button. Use [!{0} press/move URDL] to move in those directions. Use [!{0} recall] to hold the center button. Note that movement commands will not halt the command if a strike is encountered.";
+#pragma warning restore 414
+    IEnumerator Press(KMSelectable btn, float wait)
+    {
+        btn.OnInteract();
+        yield return new WaitForSeconds(wait);
+    }
     IEnumerator ProcessTwitchCommand (string command)
     {
+
         command = command.Trim().ToUpperInvariant();
-        List<string> parameters = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        yield return null;
+        Match m = Regex.Match(command, @"^(?:(?:PRESS|MOVE)\s+)?([URDL]+)$");
+        if (command == "SUBMIT")
+        {
+            yield return null;
+            tpLongHold = false;
+            yield return Press(centerButton, 0.25f);
+            centerButton.OnInteractEnded();
+        }
+        else if (command == "RECALL" && currentState == State.Input)
+        {
+            yield return null;
+            tpLongHold = true;
+            yield return Press(centerButton, 0.25f);
+            centerButton.OnInteractEnded();
+        }
+        else if (m.Success)
+        {
+            yield return null;
+            if (currentState == State.Input)
+                yield return "multiple strikes";
+            foreach (char ch in m.Groups[1].Value)
+            {
+                yield return Press(usedButtons["URDL".IndexOf(ch)].btn, 0.15f);
+            }
+            yield return "end multiple strikes";
+        }
     }
 
     IEnumerator TwitchHandleForcedSolve ()
     {
-        yield return null;
+        autosolving = true;
+        while (currentState != State.Input)
+            yield return true;
+        while (currentPos.x != endPos.x)
+            yield return Press(currentPos.x < endPos.x ? usedButtons[1].btn : usedButtons[3].btn, 0.15f);
+        while (currentPos.y != endPos.y)
+            yield return Press(currentPos.y < endPos.y ? usedButtons[0].btn : usedButtons[2].btn, 0.15f);
+        tpLongHold = false;
+        yield return Press(centerButton, 0.15f);
+        centerButton.OnInteractEnded();
     }
 }

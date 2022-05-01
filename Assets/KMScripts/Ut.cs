@@ -320,8 +320,6 @@ public static class Ut
         else return Mathf.Lerp(end, start, t * 2 - 1);
     }
 
-    
-
     /// <summary>
     ///     Decomposes a rectangular grid into multiple rows and sends each as a log message such that the logging is compatible with the Logfile Analyzer.
     /// </summary>
@@ -436,5 +434,16 @@ public static class Ut
         T output = list[ix];
         list.RemoveAt(ix);
         return output;
+    }
+    /// <summary>
+    /// Returns the value of <paramref name="input"/> if it's within the range of <paramref name="lowerBound"/> to <paramref name="upperBound"/>, and otherwise returns the bound it exceeds.
+    /// </summary>
+    public static int Clamp(this int input, int lowerBound, int upperBound)
+    {
+        if (input < lowerBound)
+            return lowerBound;
+        else if (input > upperBound)
+            return upperBound;
+        else return input;
     }
 }
