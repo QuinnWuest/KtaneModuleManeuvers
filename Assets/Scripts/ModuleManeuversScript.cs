@@ -23,6 +23,8 @@ public class ModuleManeuversScript : MonoBehaviour {
     public Transform[] positionParents;
 
     private Button[] usedButtons;
+    private static Dictionary<string, ModuleManeuversSetup> setups = new Dictionary<string, ModuleManeuversSetup>();
+
     private List<ModuleInfo> usableInfos;
     private List<ModuleInfo> primaryMods;
     private Dictionary<string, ModuleInfo> modLookup;
@@ -77,16 +79,16 @@ public class ModuleManeuversScript : MonoBehaviour {
     {
         yield return null;
         ignoredModules = ignoredModules ?? Boss.GetIgnoredModules("Module Maneuvers", new string[] { "14", "42", "501", "A>N<D", "Bamboozling Time Keeper", "Black Arrows", "Brainf---", "Busy Beaver", "Don't Touch Anything", "Floor Lights", "Forget Any Color", "Forget Enigma", "Forget Everything", "Forget Infinity", "Forget It Not", "Forget Maze Not", "Forget Me Later", "Forget Me Not", "Forget Perspective", "Forget The Colors", "Forget Them All", "Forget This", "Forget Us Not", "Iconic", "Keypad Directionality", "Kugelblitz", "Module Maneuvers", "Multitask", "OmegaDestroyer", "OmegaForest", "Organization", "Password Destroyer", "Purgatory", "RPS Judging", "Security Council", "Shoddy Chess", "Simon Forgets", "Simon's Stages", "Souvenir", "Tallordered Keys", "The Time Keeper", "Timing is Everything", "The Troll", "Turn The Key", "The Twin", "Übermodule", "Ultimate Custom Night", "The Very Annoying Button", "Whiteout" });
+        string sn = Bomb.GetSerialNumber();
+        if (!setups.ContainsKey(sn))
+            setups.Add(sn, new ModuleManeuversSetup(new List<ModuleManeuversScript>(), 
+                                    FindObjectsOfType<KMBombModule>().Where(mod => mod.GetComponent<KMBombInfo>().GetSerialNumber() == sn).ToArray(),
+                                    ignoredModules));
+        setups[sn].maneuvers.Add(this);
+        if (!setups[sn].hasStarted)
+            StartCoroutine(setups[sn].GetMods());
+        yield return new WaitUntil(() => setups[sn].isFinished);
         
-        GetMovements();
-        yield return GetPositions();
-
-        modLookup = new Dictionary<string, ModuleInfo>();
-        HashSet<string> names = new HashSet<string>();
-        foreach (ModuleInfo info in usableInfos)
-            if (names.Add(info.modName))
-                modLookup.Add(info.modName, info);
-        setUp = true;
     }
     void Update()
     {
