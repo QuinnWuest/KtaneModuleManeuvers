@@ -24,20 +24,23 @@ public class ModuleManeuversScript : MonoBehaviour {
 
     private Button[] usedButtons;
     private static Dictionary<string, ModuleManeuversSetup> setups = new Dictionary<string, ModuleManeuversSetup>();
+    private ModuleManeuversSetup thisSetup;
 
     private List<ModuleInfo> usableInfos;
     private List<ModuleInfo> primaryMods;
-    private Dictionary<string, ModuleInfo> modLookup;
+    private Dictionary<string, ModuleInfo> modLookup = new Dictionary<string, ModuleInfo>();
     private List<string> solvedModules = new List<string>();
+
 
     private Coordinate endPos, currentPos;
 
     static int moduleIdCounter = 1;
     int moduleId;
-    private bool setUp;
+    private bool hasBeenSetUp;
     private State currentState = State.Active;
-    private int currentRecallStage = 1;
+    private bool enteredInputYet = false;
     private int arrowPressesCount = 0;
+    private int currentRecallStage = 1;
 
     private bool centerHeld;
     private Coroutine holdCoroutine;
@@ -49,6 +52,7 @@ public class ModuleManeuversScript : MonoBehaviour {
         moduleId = moduleIdCounter++;
         centerButton.OnInteract += () => { Hold(); return false; };
         centerButton.OnInteractEnded += () => Release();
+        Module.OnActivate += () => { Audio.PlaySoundAtTransform("intro", transform); };
         GetButtons();
     }
     void Hold()
@@ -75,24 +79,37 @@ public class ModuleManeuversScript : MonoBehaviour {
         holdTime = 0;
     }
   
-  IEnumerator Start ()
+  IEnumerator Start()
     {
         yield return null;
         ignoredModules = ignoredModules ?? Boss.GetIgnoredModules("Module Maneuvers", new string[] { "14", "42", "501", "A>N<D", "Bamboozling Time Keeper", "Black Arrows", "Brainf---", "Busy Beaver", "Don't Touch Anything", "Floor Lights", "Forget Any Color", "Forget Enigma", "Forget Everything", "Forget Infinity", "Forget It Not", "Forget Maze Not", "Forget Me Later", "Forget Me Not", "Forget Perspective", "Forget The Colors", "Forget Them All", "Forget This", "Forget Us Not", "Iconic", "Keypad Directionality", "Kugelblitz", "Module Maneuvers", "Multitask", "OmegaDestroyer", "OmegaForest", "Organization", "Password Destroyer", "Purgatory", "RPS Judging", "Security Council", "Shoddy Chess", "Simon Forgets", "Simon's Stages", "Souvenir", "Tallordered Keys", "The Time Keeper", "Timing is Everything", "The Troll", "Turn The Key", "The Twin", "Übermodule", "Ultimate Custom Night", "The Very Annoying Button", "Whiteout" });
         string sn = Bomb.GetSerialNumber();
         if (!setups.ContainsKey(sn))
-            setups.Add(sn, new ModuleManeuversSetup(new List<ModuleManeuversScript>(), 
-                                    FindObjectsOfType<KMBombModule>().Where(mod => mod.GetComponent<KMBombInfo>().GetSerialNumber() == sn).ToArray(),
-                                    ignoredModules));
-        setups[sn].maneuvers.Add(this);
-        if (!setups[sn].hasStarted)
-            StartCoroutine(setups[sn].GetMods());
-        yield return new WaitUntil(() => setups[sn].isFinished);
-        
+        {
+            thisSetup = new ModuleManeuversSetup(moduleId, sn,
+                                new List<ModuleManeuversScript>(),
+
+                                Bomb.GetSolvableModuleNames().ToArray(),
+                                //new[] { "3D Maze", "Adjacent Letters", "Adventure Game", "Alphabet", "Anagrams", "Astrology", "Battleship", "Big Button Translated", "Binary LEDs", "Bitmaps", "Bitwise Operations", "Blind Alley", "Boolean Venn Diagram", "Broken Buttons", "The Bulb", "The Button", "Caesar Cipher", "Cheap Checkout", "Chess", "Chord Qualities", "The Clock", "Colored Squares", "Color Math", "Colour Flash", "Combination Lock", "Complicated Buttons", "Complicated Wires", "Connection Check", "Coordinates", "Crazy Talk", "Creation", "Cryptography", "Double-Oh", "Emoji Math", "English Test", "Fast Math", "FizzBuzz", "Follow the Leader", "Foreign Exchange Rates", "Forget Me Not", "Friendship", "The Gamepad", "Hexamaze", "Ice Cream", "Keypad", "Laundry", "LED Encryption", "Letter Keys", "Light Cycle", "Listening", "Logic", "Maze", "Memory", "Microcontroller", "Minesweeper", "Modules Against Humanity", "Monsplode, Fight!", "Morse Code", "Morse Code Translated", "Morsematics", "Mouse In The Maze", "Murder", "Mystic Square", "Neutralization", "Number Pad", "Only Connect", "Orientation Cube", "Password", "Passwords Translated", "Perspective Pegs", "Piano Keys", "Plumbing", "Point of Order", "Probing", "Resistors", "Rhythms", "Rock-Paper-Scissors-L.-Sp.", "Round Keypad", "Rubik's Cube", "Safety Safe", "The Screw", "Sea Shells", "Semaphore", "Shape Shift", "Silly Slots", "Simon Says", "Simon Screams", "Simon States", "Skewed Slots", "Souvenir", "Square Button", "Switches", "Symbolic Password", "Text Field", "Third Base", "Tic Tac Toe", "Turn The Key", "Turn The Keys", "Two Bits", "Web Design", "Who's on First", "Who's on First Translated", "Wire Placement", "Wires", "Wire Sequence", "Word Scramble", "Word Search", "Yahtzee", "Zoo" },
+
+                                ignoredModules);
+            setups.Add(sn, thisSetup);
+        }
+        thisSetup = setups[sn];
+        thisSetup.maneuvers.Add(this);
+        if (!thisSetup.hasStarted)
+            StartCoroutine(thisSetup.GetMods());
+        yield return new WaitUntil(() => thisSetup.isFinished);
+
+        GetMovements();
+        GetPositions();
+
+        hasBeenSetUp = true;
+
     }
     void Update()
     {
-        if (!setUp)
+        if (!hasBeenSetUp)
             return;
         if (centerHeld)
             holdTime += Time.deltaTime;
@@ -117,8 +134,9 @@ public class ModuleManeuversScript : MonoBehaviour {
         //else Log("kjdfslfajksdfljksdkfjl " + currentSolves.Count() + " " + solvedModules.Count);
 
 
-        if (solvedModules.Count == usableInfos.Count)
+        if (solvedModules.Count == usableInfos.Count && !enteredInputYet)
         {
+            enteredInputYet = true;
             currentState = State.Input;
             StartCoroutine(EnterInput());
         }
@@ -144,7 +162,7 @@ public class ModuleManeuversScript : MonoBehaviour {
     {
         string[] modNames = Bomb.GetSolvableModuleNames().Where(x => !ignoredModules.Contains(x)).ToArray();
 #if UNITY_EDITOR
-        modNames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(x => x.ToString()).ToArray();
+        modNames = new[] { "3D Maze", "Adjacent Letters", "Adventure Game", "Alphabet", "Anagrams", "Astrology", "Battleship", "Big Button Translated", "Binary LEDs", "Bitmaps", "Bitwise Operations", "Blind Alley", "Boolean Venn Diagram", "Broken Buttons", "The Bulb", "The Button", "Caesar Cipher", "Cheap Checkout", "Chess", "Chord Qualities", "The Clock", "Colored Squares", "Color Math", "Colour Flash", "Combination Lock", "Complicated Buttons", "Complicated Wires", "Connection Check", "Coordinates", "Crazy Talk", "Creation", "Cryptography", "Double-Oh", "Emoji Math", "English Test", "Fast Math", "FizzBuzz", "Follow the Leader", "Foreign Exchange Rates", "Forget Me Not", "Friendship", "The Gamepad", "Hexamaze", "Ice Cream", "Keypad", "Laundry", "LED Encryption", "Letter Keys", "Light Cycle", "Listening", "Logic", "Maze", "Memory", "Microcontroller", "Minesweeper", "Modules Against Humanity", "Monsplode, Fight!", "Morse Code", "Morse Code Translated", "Morsematics", "Mouse In The Maze", "Murder", "Mystic Square", "Neutralization", "Number Pad", "Only Connect", "Orientation Cube", "Password", "Passwords Translated", "Perspective Pegs", "Piano Keys", "Plumbing", "Point of Order", "Probing", "Resistors", "Rhythms", "Rock-Paper-Scissors-L.-Sp.", "Round Keypad", "Rubik's Cube", "Safety Safe", "The Screw", "Sea Shells", "Semaphore", "Shape Shift", "Silly Slots", "Simon Says", "Simon Screams", "Simon States", "Skewed Slots", "Souvenir", "Square Button", "Switches", "Symbolic Password", "Text Field", "Third Base", "Tic Tac Toe", "Turn The Key", "Turn The Keys", "Two Bits", "Web Design", "Who's on First", "Who's on First Translated", "Wire Placement", "Wires", "Wire Sequence", "Word Scramble", "Word Search", "Yahtzee", "Zoo" };
 #endif
         usableInfos = new List<ModuleInfo>(modNames.Length);
         Log("Found {0} modules on the bomb.", modNames.Length);
@@ -154,39 +172,31 @@ public class ModuleManeuversScript : MonoBehaviour {
             usableInfos.Add(info);
             Log(info.ToString());
         }
+        HashSet<string> mods = new HashSet<string>();
+        foreach (ModuleInfo mod in usableInfos)
+            if (mods.Add(mod.modName))
+                modLookup.Add(mod.modName, mod);
     }
-    IEnumerator GetPositions()
+    void GetPositions()
     {
-        ModuleInfo[] uses = usableInfos.Where(x => x.directions.Count > 0).ToArray();
         currentPos = new Coordinate(0, 0);
-        if (uses.Count() > 0)
+
+        if (thisSetup.chosenPathForThisSN == null)
+            thisSetup.chosenPathForThisSN = GetPath(thisSetup.finalOrder.Select(str => modLookup[str]).ToArray());
+        List<ModuleInfo> path = thisSetup.chosenPathForThisSN;
+        Log("Generated path:");
+        List<Coordinate> visited = new List<Coordinate>(path.Count + 1) { new Coordinate(0, 0) };
+        foreach (ModuleInfo info in path)
         {
-            List<ModuleInfo> path = null;
-            yield return GetPrimaryMods(uses.ToList());
-            if (Bomb.GetModuleNames().Contains("Organization"))
-            {
-                int pathLength = Math.Max(1, uses.Length / 3);
-                Log("Organization detected, solving after {0} modules.", pathLength);
-                var script = ReflectionHelper.FindType("OrganizationScript");
-                var instance = FindObjectOfType(script);
-                List<string> order = instance.GetValue<List<string>>("order");
-                path = order.Select(item => uses.FirstOrDefault(x => x.modName == item)).Where(x => x != null).Take(pathLength).ToList();
-            }
-            else path = GetPath(uses);
-            Log("Generated path:");
-            List<Coordinate> visited = new List<Coordinate>(path.Count + 1) { new Coordinate(0, 0) };
-            foreach (ModuleInfo info in path)
-            {
-                Log(info.ToString());
-                visited.Add(visited.Last().ApplyMovement(info.directions));
-            }
-            Log("Path from origin: " + visited.Join(" > "));
-            endPos = visited.Last();
-            leftDisp.text = endPos.x.ToString();
-            rightDisp.text = endPos.y.ToString();
-            Log("Goal position: {0}.", endPos);
-            
+            Log(info.ToString());
+            visited.Add(visited.Last().ApplyMovement(info.directions));
         }
+        Log("Path from origin: " + visited.Join(" > "));
+        endPos = visited.Last();
+        leftDisp.text = endPos.x.ToString();
+        rightDisp.text = endPos.y.ToString();
+        Log("Goal position: {0}.", endPos);
+
     }
 
     IEnumerator EnterInput()
@@ -250,6 +260,7 @@ public class ModuleManeuversScript : MonoBehaviour {
             for (int i = 0; i < 4; i++)
                 usedButtons[i].SetChildStatus(false);
             Module.HandlePass();
+            Audio.PlaySoundAtTransform("outro", transform);
         }
         else
         {
@@ -259,21 +270,30 @@ public class ModuleManeuversScript : MonoBehaviour {
     }
     List<ModuleInfo> GetPath(ModuleInfo[] used)
     {
-        int pathLength = Math.Max(1, used.Length / 3);
-        List<ModuleInfo> path = new List<ModuleInfo>(pathLength);
-        List<ModuleInfo> firstMods = primaryMods.ToList();
-        List<ModuleInfo> laterMods = used.Where(x => !firstMods.Contains(x)).ToList();
-        
-        Dictionary<Dir, List<ModuleInfo>> values = new Dictionary<Dir, List<ModuleInfo>>()
-                    { {Dir.Up, new List<ModuleInfo>() }, {Dir.Right, new List<ModuleInfo>() }, {Dir.Down, new List<ModuleInfo>() }, {Dir.Left, new List<ModuleInfo>()} };
-        foreach (ModuleInfo info in firstMods)
+        List<ModuleInfo> path;
+        int pathLength;
+        if (thisSetup.orglist == null)
+        {
+            pathLength = Math.Max(1, used.Length / 3);
+            path = used.Take(pathLength).ToList();
+        }
+        else
+        {
+            Log("ORGLISTCOUNT: " + thisSetup.orglist.Count);
+            pathLength = thisSetup.orglist.Count;
+            path = thisSetup.orglist.Select(x => modLookup[x]).ToList();
+        }
+
+        /*
+        foreach (string info in order)
             for (int i = 0; i < 4; i++)
-                if (info.Includes((Dir)i))
-                    values[(Dir)i].Add(info);
+                if (modLookup[info].Includes((Dir)i))
+                    values[(Dir)i].Add(modLookup[info]);
         var primaryEntry = values.Where(entry => entry.Value.Count == values.Max(x => x.Value.Count)).PickRandom();
         Dir primDir = primaryEntry.Key;
         List<ModuleInfo> primMods = primaryEntry.Value.Shuffle();
-        firstMods.RemoveMany(primMods);
+        primMods.RemoveMany(primMods);
+        
         //int takenFromPrimaryCount = Enumerable.Range(1, Math.Min(primMods.Count, pathLength))
         //                            .SelectMany(val => Enumerable.Repeat(val, Math.Max(1, val < primMods.Count / 2 ? val : primMods.Count - val)))
         //                            .PickRandom();
@@ -289,48 +309,11 @@ public class ModuleManeuversScript : MonoBehaviour {
         path.AddRange(firstMods.Take(pathLength));
         for (int i = 0; path.Count != pathLength && i < laterMods.Count; i++)
             path.Add(laterMods[i]);
-
+        */
 
         Log("Selecting {0} mods for the pre-generated path.", pathLength);
         //Log("Found {0} mods with the primary chosen direction ({1}).", primMods.Count, primDir);
         return path;
-    }
-    IEnumerator GetPrimaryMods(List<ModuleInfo> infos)
-    {
-        if (infos.Select(x => x.modName).Contains("Turn The Keys"))
-            infos = FilterWithTTKS(infos);
-        if (Bomb.GetModuleNames().Contains("Custom Keys"))
-            yield return FilterWithCustomKeys(infos);
-        if (Bomb.GetModuleNames().Contains("Mystery Module"))
-            yield return FilterWithMM(infos);
-        primaryMods = infos;
-    }
-    List<ModuleInfo> FilterWithTTKS(List<ModuleInfo> infos)
-    {
-        Log("Turn The Keys found, filtering by its ignore list.");
-        string[] after = { "Maze", "Memory", "Complicated Wires", "Wire Sequence", "Cryptography", "Semaphore", "Combination Lock", "Simon Says", "Astrology", "Switches", "Plumbing" };
-        return infos.Where(inf => !after.Contains(inf.modName)).ToList();
-    }
-    IEnumerator FilterWithCustomKeys(List<ModuleInfo> infos)
-    {
-        Log("Custom Keys found, filtering by its ignore list.");
-        var script = ReflectionHelper.FindType("RemoteTurnTheKeysScript");
-        var instance = FindObjectOfType(script);
-        while (instance.GetValue<string[]>("leftKeyAfter") == null || instance.GetValue<string[]>("rightKeyAfter") == null)
-            yield return null;
-        List<string> after  = instance.GetValue<string[]>("leftKeyAfter").Concat(
-                              instance.GetValue<string[]>("rightKeyAfter")).ToList();
-        infos = infos.Where(inf => !after.Contains(inf.modName)).ToList();
-    }
-    IEnumerator FilterWithMM(List<ModuleInfo> infos)
-    {
-        Log("Mystery module found, filtering by its module list");
-        var script = ReflectionHelper.FindType("MysteryModuleScript");
-        var instance = FindObjectOfType(script);
-        while (instance.GetValue<List<KMBombModule>>("keyModules") == null)
-            yield return null;
-        List<string> keys = instance.GetValue<List<KMBombModule>>("keyModules").Select(x => x.ModuleDisplayName).ToList();
-        infos = infos.Where(inf => !keys.Contains(inf.modName)).ToList();
     }
 
     void EnterStageRecall()
@@ -342,11 +325,13 @@ public class ModuleManeuversScript : MonoBehaviour {
     {
         for (int i = 0; i < 4; i++)
             usedButtons[i].SetChildStatus(false);
-        Log("Recalling stages {0}-{1} (this will strike).", currentRecallStage, (currentRecallStage + 2).Clamp(0, solvedModules.Count));
+        Log("Recalling stages {0}–{1} (this will strike).", currentRecallStage, (currentRecallStage + 2).Clamp(0, solvedModules.Count));
         currentState = State.RecallingProcess;
+        int soundIx = 0;
         for (int stage = currentRecallStage - 1; stage < solvedModules.Count && stage < currentRecallStage + 2; stage++)
         {
             SetDisplays(stage + 1);
+            Audio.PlaySoundAtTransform("flash" + soundIx++, transform);
             for (int arrowPos = 0; arrowPos < 4; arrowPos++)
                 usedButtons[arrowPos].SetRendererFlash(modLookup[solvedModules[stage]].directions.Contains((Dir)arrowPos));
             yield return new WaitForSeconds(0.75f);
@@ -393,7 +378,6 @@ public class ModuleManeuversScript : MonoBehaviour {
     }
     IEnumerator ProcessTwitchCommand (string command)
     {
-
         command = command.Trim().ToUpperInvariant();
         Match m = Regex.Match(command, @"^(?:(?:PRESS|MOVE)\s+)?([URDL]+)$");
         if (command == "SUBMIT")
