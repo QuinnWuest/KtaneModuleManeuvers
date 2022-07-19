@@ -123,8 +123,10 @@ public class ModuleManeuversScript : MonoBehaviour {
         var currentSolves = Bomb.GetSolvedModuleNames().Except(ignoredModules);
         if (currentSolves.Count() != solvedModules.Count)
         {
-        //    Log("fhowfow " + currentSolves.Count() + " " + solvedModules.Count);
-            var newSolves = currentSolves.Except(solvedModules);
+            //    Log("fhowfow " + currentSolves.Count() + " " + solvedModules.Count);
+            List<string> newSolves = currentSolves.ToList();
+            foreach (string str in solvedModules)
+                newSolves.Remove(str);
         //    Log("{0} new solves", newSolves.Count());
             foreach (string solve in newSolves)
                 MoveFromMod(modLookup[solve]);
