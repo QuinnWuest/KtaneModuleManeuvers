@@ -396,7 +396,7 @@ public class ModuleManeuversScript : MonoBehaviour {
             yield return Press(centerButton, 0.25f);
             centerButton.OnInteractEnded();
         }
-        else if (m.Success)
+        else if (m.Success && currentState.EqualsAny(State.Input, State.Recall))
         {
             yield return null;
             if (currentState == State.Input)
