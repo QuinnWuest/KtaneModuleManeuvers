@@ -375,6 +375,8 @@ public class ModuleManeuversScript : MonoBehaviour {
 #pragma warning restore 414
     IEnumerator Press(KMSelectable btn, float wait)
     {
+        if (btn == null || btn.OnInteract == null)
+            yield break;
         btn.OnInteract();
         yield return new WaitForSeconds(wait);
     }
