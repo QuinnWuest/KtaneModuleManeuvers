@@ -4,5 +4,5 @@ using System.Text.RegularExpressions;
 public class RectangularButton : Button
 {
     public override string name { get { return "Flat Rectangle"; } }
-    public override Predicate<string> rule { get { return str => Regex.IsMatch(str, "\bTHE\b", regexFlags); } }
+    public override Predicate<string> rule { get { return str => str.ToLowerInvariant().Contains("the"); } }
 }
